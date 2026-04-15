@@ -25,3 +25,9 @@ void	ft_error(const char *context, const char *file, int line)
 		printf("  file: %s - line: %i\n", file, line);
 	}
 }
+
+char    *get_error_name(long errnum)
+{
+    (void)errnum;
+    return ("EUNKNOWN");
+}

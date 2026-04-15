@@ -4,9 +4,15 @@ CC		= gcc
 CFLAGS	= -Wall -Wextra -Werror
 IFLAGS	= -I incl
 
-SRCS	= src/main.c
+SRCS	=	src/main.c \
+			src/tracer.c \
+			src/aux.c \
+			src/child.c \
+			src/output.c \
+			src/syscalls_table/table_64.c \
+			src/syscalls_table/table_32.c
 
-OBJS	= $(SRCS: .c=.o)
+OBJS	= $(SRCS:.c=.o)
 
 all: $(NAME)
 
@@ -14,7 +20,10 @@ $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(IFLAGS) $(OBJS) -o $(NAME)
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(IFLAGS) -c %< -o $@
+	$(CC) $(CFLAGS) $(IFLAGS) -c $< -o $@
+
+debug: CFLAGS += -g -DDEBUG=1
+debug: re
 
 clean:
 	rm -f $(OBJS)
@@ -26,4 +35,4 @@ re: fclean all
 
 
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug
