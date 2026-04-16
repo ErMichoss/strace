@@ -26,12 +26,6 @@ void	ft_error(const char *context, const char *file, int line)
 	}
 }
 
-char    *get_error_name(long errnum)
-{
-    (void)errnum;
-    return ("EUNKNOWN");
-}
-
 void free_str_matrix(char **mtx)
 {
     for (int i = 0; mtx[i]; i++)

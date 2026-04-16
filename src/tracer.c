@@ -34,7 +34,7 @@ static void trace_loop(pid_t pid)
         }
 
         if (WIFEXITED(status)) {
-            printf("+++ exited with %d +++\n", WEXITSTATUS(status));
+            fprintf(stderr, "+++ exited with %d +++\n", WEXITSTATUS(status));
             break;
         }
 
@@ -65,7 +65,7 @@ static void trace_loop(pid_t pid)
 
                 if (syscall_num == 60 || syscall_num == 231)
                 {
-                    printf(") = ?\n");
+                    fprintf(stderr, ") = ?\n");
                     entry = false;
                     continue;
                 }

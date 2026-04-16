@@ -79,10 +79,18 @@ void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs 
 
     // Nombre de la syscall
     if (!syscall || !syscall->name) {
-        printf("syscall_%d(", syscall_num);
+        fprintf(stderr, "syscall_%d(", syscall_num);
         return ;
     } else {
-        printf("%s(", syscall->name);
+        fprintf(stderr, "%s(", syscall->name);
+    }
+
+    if (syscall_num == 0 || syscall_num == 1)
+    {
+        fprintf(stderr, "%d, ", (int)args[0]);
+        read_buffer(pid, args[1], args[2]);
+        fprintf(stderr, ", %d", (int)args[2]);
+        return ;
     }
 
     // Argumentos
@@ -90,16 +98,19 @@ void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs 
     while (i < 6 && syscall->arg_types[i] != VOID)
     {
         if (i > 0)
-            printf(", ");
+            fprintf(stderr, ", ");
 
-        if (syscall->arg_types[i] == INT)
-            printf("%d", (int)args[i]);
-        else if (syscall->arg_types[i] == POINTER)
-            printf("%p", (void *)args[i]);
-        else if (syscall->arg_types[i] == STRING) {
+        if (syscall->arg_types[i] == INT) {
+            if ((int)args[i] == -100)
+                fprintf(stderr, "AT_FDCWD"); // valor especial utilizado en llamadas al sistema (syscalls) tipo "*at" como openat
+            else
+                fprintf(stderr, "%d", (int)args[i]);
+        } else if (syscall->arg_types[i] == POINTER) {
+            fprintf(stderr, "%p", (void *)args[i]);
+        } else if (syscall->arg_types[i] == STRING) {
             char tmp[256];
             read_string(pid, args[i], tmp, sizeof(tmp));
-            printf("\"%s\"", tmp);
+            fprintf(stderr, "\"%s\"", tmp);
         }
         i++;
     }
@@ -112,11 +123,11 @@ void print_syscall_exit(t_regs *regs, int arch, int syscall_num)
     ret = arch == ARCH_32 ? regs->reg32.eax : regs->reg64.rax;
 
     if (ret < 0)
-        printf(") = -1 %s (%s)\n", get_error_name(ret), strerror(-ret));
+        fprintf(stderr, ") = -1 %s (%s)\n", get_error_name(ret), strerror(-ret));
     else if (syscall_num == 9  ||   // mmap
              syscall_num == 12 ||   // brk
              syscall_num == 25)     // mremap
-        printf(") = %p\n", (void *)ret);
+        fprintf(stderr, ") = %p\n", (void *)ret);
     else
-        printf(") = %d\n", (int)ret);
+        fprintf(stderr, ") = %d\n", (int)ret);
 }

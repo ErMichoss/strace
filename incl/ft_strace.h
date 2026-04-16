@@ -74,13 +74,17 @@ typedef enum
     POINTER,
 }   e_arg_type;
 
-
-
 typedef struct s_syscall
 {
     char        *name;
     e_arg_type  arg_types[6];
 }   t_syscall;
+
+typedef struct s_error
+{
+    int     num;
+    char    *name;
+}   t_error;
 
 extern t_syscall g_syscall_table_64[];
 extern t_syscall g_syscall_table_32[];
@@ -88,7 +92,6 @@ extern t_syscall g_syscall_table_32[];
 // ___ AUX ___
 size_t	ft_strlen(const char *str);
 void	ft_error(const char *context, const char *file, int line);
-char    *get_error_name(long errnum); //TODO temporal
 void    free_str_matrix(char **mtx);
 char	*ft_strjoin(char const *s1, char const *s2);
 char	**ft_split(char const *s, char c);
@@ -105,6 +108,13 @@ int run_tracer(pid_t pid);
 // ___ OUTPUT ___
 void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs *regs, int arch);
 void print_syscall_exit(t_regs *regs, int arch, int syscall_num);
+
+// __ ERROR_TABLE ___
+char    *get_error_name(long errnum);
+
+// ___ BUFFER ___
+void read_buffer(pid_t pid, unsigned long addr, size_t len);
+
 
 
 #endif
