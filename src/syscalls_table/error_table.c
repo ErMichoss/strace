@@ -31,13 +31,15 @@ static t_error g_errors[] = {
 
 char    *get_error_name(long errnum)
 {
-    int i;
-
     errnum = -errnum;
-    i = 0;
+    
+    if (errnum > 4095)
+        return "EINTR";
+    
+    int i = 0;
     while (g_errors[i].name != NULL)
     {
-        if (g_errors[i].num == errnum)
+        if (g_errors[i].num == (int)errnum)
             return g_errors[i].name;
         i++;
     }

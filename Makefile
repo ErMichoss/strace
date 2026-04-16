@@ -10,9 +10,11 @@ SRCS	=	src/main.c \
 			src/child.c \
 			src/output.c \
 			src/buffer.c \
+			src/signal.c \
 			src/syscalls_table/table_64.c \
 			src/syscalls_table/table_32.c \
 			src/syscalls_table/error_table.c \
+			src/syscalls_table/signal_table.c \
 			src/libft/ft_split.c \
 			src/libft/ft_strjoin.c
 

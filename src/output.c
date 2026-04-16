@@ -119,14 +119,19 @@ void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs 
 void print_syscall_exit(t_regs *regs, int arch, int syscall_num)
 {
     long    ret;
+    long    err;
 
     ret = arch == ARCH_32 ? regs->reg32.eax : regs->reg64.rax;
 
-    if (ret < 0)
-        fprintf(stderr, ") = -1 %s (%s)\n", get_error_name(ret), strerror(-ret));
-    else if (syscall_num == 9  ||   // mmap
-             syscall_num == 12 ||   // brk
-             syscall_num == 25)     // mremap
+    err = ret;
+    if (ret < 0 && -ret > 512 && -ret < 530)
+        err = -((-ret) - 512);
+
+    if (err < 0)
+        fprintf(stderr, ") = -1 %s (%s)\n", get_error_name(err), strerror(-err));
+    else if (syscall_num == 9  ||
+             syscall_num == 12 ||
+             syscall_num == 25)
         fprintf(stderr, ") = %p\n", (void *)ret);
     else
         fprintf(stderr, ") = %d\n", (int)ret);

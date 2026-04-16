@@ -25,6 +25,12 @@ static void trace_loop(pid_t pid)
 
     while (1) {
         if (ptrace(PTRACE_SYSCALL, pid, NULL, NULL) == -1) {
+            if (errno == ESRCH) {
+                // esperar a que el proceso esté listo
+                if (waitpid(pid, &status, WNOHANG) == 0)
+                    continue;   // proceso sigue vivo, reintentar
+                break;          // proceso realmente terminó
+            }
             FT_ERROR("ptrace(PTRACE_SYSCALL)");
             return ;
         }
@@ -39,8 +45,37 @@ static void trace_loop(pid_t pid)
         }
 
         if (WIFSIGNALED(status)) {
-            //Imprimir Señal
+            fprintf(stderr, "+++ killed by %s +++\n", get_signal_name(WTERMSIG(status)));
             break;
+        }
+
+        if (WIFSTOPPED(status) && (WSTOPSIG(status) != (SIGTRAP | 0x80)))
+        {
+            int sig = WSTOPSIG(status);
+
+            if (sig == SIGTRAP)
+            {
+                // comprobar si es evento EXEC
+                int event = (status >> 16) & 0xffff;
+                if (event == PTRACE_EVENT_EXEC)
+                {
+                    entry = true;
+                    ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                    continue;
+                }
+                ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                continue;
+            }
+
+            siginfo_t siginfo;
+            if (ptrace(PTRACE_GETSIGINFO, pid, NULL, &siginfo) == 0)
+                fprintf(stderr, "--- %s {si_signo=%s, si_code=%d} ---\n",
+                        get_signal_name(sig), get_signal_name(sig), siginfo.si_code);
+            else
+                fprintf(stderr, "--- %s ---\n", get_signal_name(sig));
+
+            ptrace(PTRACE_SYSCALL, pid, NULL, (void *)(long)sig);
+            continue;
         }
 
         if (WIFSTOPPED(status) && (WSTOPSIG(status) == (SIGTRAP | 0x80))) {
