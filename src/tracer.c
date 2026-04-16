@@ -59,7 +59,16 @@ static void trace_loop(pid_t pid)
                 int event = (status >> 16) & 0xffff;
                 if (event == PTRACE_EVENT_EXEC)
                 {
+                    fprintf(stderr, ") = 0\n");
                     entry = true;
+                    ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                    continue;
+                }
+                if (event == PTRACE_EVENT_EXIT)
+                {
+                    unsigned long exit_code;
+                    ptrace(PTRACE_GETEVENTMSG, pid, NULL, &exit_code);
+                    fprintf(stderr, "+++ exited with %lu +++\n", exit_code);
                     ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
                     continue;
                 }
