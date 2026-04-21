@@ -116,7 +116,13 @@ static void trace_loop(pid_t pid)
 
                 entry = false;
             } else {
-                print_syscall_exit(&regs, arch, syscall_num);
+                t_syscall *table = regs.is_32bit ? g_syscall_table_32 : g_syscall_table_64;
+                int max = regs.is_32bit ? MAX_SYSCALLS_32 : MAX_SYSCALLS_64;
+                if (syscall_num >= 0 && syscall_num < max)
+                    syscall = &table[syscall_num];
+                else 
+                    syscall = NULL;
+                print_syscall_exit(&regs, arch, syscall->name);
                 entry = true;
             }
         }

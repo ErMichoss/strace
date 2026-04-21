@@ -85,7 +85,8 @@ void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs 
         fprintf(stderr, "%s(", syscall->name);
     }
 
-    if (syscall_num == 0 || syscall_num == 1)
+    if (syscall && syscall->name && 
+        (strcmp(syscall->name, "read") == 0 || strcmp(syscall->name, "write") == 0))
     {
         fprintf(stderr, "%d, ", (int)args[0]);
         read_buffer(pid, args[1], args[2]);
@@ -116,7 +117,7 @@ void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs 
     }
 }
 
-void print_syscall_exit(t_regs *regs, int arch, int syscall_num)
+void print_syscall_exit(t_regs *regs, int arch, char *syscall_name)
 {
     long    ret;
     long    err;
@@ -129,9 +130,10 @@ void print_syscall_exit(t_regs *regs, int arch, int syscall_num)
 
     if (err < 0)
         fprintf(stderr, ") = -1 %s (%s)\n", get_error_name(err), strerror(-err));
-    else if (syscall_num == 9  ||
-             syscall_num == 12 ||
-             syscall_num == 25)
+    else if (syscall_name && (strcmp(syscall_name, "mmap") == 0 || 
+                     strcmp(syscall_name, "mmap2") == 0 ||
+                     strcmp(syscall_name, "brk") == 0 ||
+                     strcmp(syscall_name, "mremap") == 0))
         fprintf(stderr, ") = %p\n", (void *)ret);
     else
         fprintf(stderr, ") = %d\n", (int)ret);

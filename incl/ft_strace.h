@@ -114,7 +114,7 @@ int run_tracer(pid_t pid);
 
 // ___ OUTPUT ___
 void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs *regs, int arch);
-void print_syscall_exit(t_regs *regs, int arch, int syscall_num);
+void print_syscall_exit(t_regs *regs, int arch, char *syscall_name);
 
 // __ ERROR_TABLE ___
 char    *get_error_name(long errnum);
