@@ -68,7 +68,7 @@ static void trace_loop(pid_t pid)
                 {
                     unsigned long exit_code;
                     ptrace(PTRACE_GETEVENTMSG, pid, NULL, &exit_code);
-                    fprintf(stderr, "+++ exited with %lu +++\n", exit_code);
+                    fprintf(stderr, "+++ exited with %lu +++\n", exit_code >> 8);
                     ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
                     continue;
                 }

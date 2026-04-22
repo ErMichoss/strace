@@ -44,7 +44,9 @@ void run_child(char *argv[], char *envp[])
     } else {
         char *bin = ft_find_binary(argv[1], envp);
         if(bin == NULL) {
-            FT_ERROR("ft_find_binary");
+            write(2, "ft_strace: ", 11);
+            write(2, argv[1], ft_strlen(argv[1]));
+            write(2, ": command not found\n", 20);
             exit(1);
         }
         if (execve(bin, &argv[1], envp) == -1) {
