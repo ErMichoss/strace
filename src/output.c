@@ -117,7 +117,7 @@ void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs 
     }
 }
 
-void print_syscall_exit(t_regs *regs, int arch, char *syscall_name)
+void print_syscall_exit(t_regs *regs, int arch, int syscall_num)
 {
     long    ret;
     long    err;
@@ -130,11 +130,16 @@ void print_syscall_exit(t_regs *regs, int arch, char *syscall_name)
 
     if (err < 0)
         fprintf(stderr, ") = -1 %s (%s)\n", get_error_name(err), strerror(-err));
-    else if (syscall_name && (strcmp(syscall_name, "mmap") == 0 || 
-                     strcmp(syscall_name, "mmap2") == 0 ||
-                     strcmp(syscall_name, "brk") == 0 ||
-                     strcmp(syscall_name, "mremap") == 0))
+    else if (syscall_num == 9   ||  // mmap 64
+             syscall_num == 90  ||  // mmap 32
+             syscall_num == 192 ||  // mmap2 32
+             syscall_num == 12  ||  // brk 64
+             syscall_num == 45  ||  // brk 32
+             syscall_num == 25  ||  // mremap 64
+             syscall_num == 163)    // mremap 32
         fprintf(stderr, ") = %p\n", (void *)ret);
+    else if (syscall_num == 59)     // execve
+        fprintf(stderr, ") = 0\n");
     else
         fprintf(stderr, ") = %d\n", (int)ret);
 }

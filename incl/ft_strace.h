@@ -92,6 +92,15 @@ typedef struct s_signal
     char    *name;
 }   t_signal;
 
+typedef struct s_proc
+{
+    pid_t           pid;
+    bool            entry;
+    int             syscall_num;
+    int             arch;
+    struct s_proc   *next;
+}   t_proc;
+
 extern t_syscall g_syscall_table_64[];
 extern t_syscall g_syscall_table_32[];
 extern t_signal g_signals[];
@@ -102,19 +111,26 @@ void	ft_error(const char *context, const char *file, int line);
 void    free_str_matrix(char **mtx);
 char	*ft_strjoin(char const *s1, char const *s2);
 char	**ft_split(char const *s, char c);
+t_proc  *proc_new(pid_t pid, int arch);
+t_proc  *proc_find(t_proc *list, pid_t pid);
+void    proc_add(t_proc **list, t_proc *proc);
+void    proc_remove(t_proc **list, pid_t pid);
+void    proc_free_all(t_proc **list);
 
 // ___ MAIN ___
 int main(int argc, char *argv[], char *envp[]);
 
 // ___ CHILD ___
+int detect_arch(char *binary);
+char *ft_find_binary(char *arg, char *envp[]);
 void run_child(char *argv[], char *envp[]);
 
 // ___ TRACER ___
-int run_tracer(pid_t pid);
+int  run_tracer(pid_t pid, int arch);
 
 // ___ OUTPUT ___
 void print_syscall_entry(pid_t pid, int syscall_num, t_syscall *syscall, t_regs *regs, int arch);
-void print_syscall_exit(t_regs *regs, int arch, char *syscall_name);
+void print_syscall_exit(t_regs *regs, int arch, int syscall_num);
 
 // __ ERROR_TABLE ___
 char    *get_error_name(long errnum);

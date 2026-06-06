@@ -1,6 +1,6 @@
 #include "ft_strace.h"
 
-static char *ft_find_binary(char *arg, char *envp[])
+char *ft_find_binary(char *arg, char *envp[])
 {
     char *path = NULL;
 
@@ -31,6 +31,22 @@ static char *ft_find_binary(char *arg, char *envp[])
 
     free_str_matrix(dirs);
     return NULL;
+}
+
+int detect_arch(char *binary)
+{
+    unsigned char   buf[5];
+    int             fd;
+
+    fd = open(binary, O_RDONLY);
+    if (fd == -1)
+        return ARCH_64;  // asumir 64 por defecto
+    read(fd, buf, 5);
+    close(fd);
+
+    if (buf[4] == 1)
+        return ARCH_32;
+    return ARCH_64;
 }
 
 void run_child(char *argv[], char *envp[])
