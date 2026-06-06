@@ -1,5 +1,4 @@
 #include "ft_strace.h"
-
 char *get_signal_name(int signum) 
 {
     int i = 0;

@@ -1,5 +1,14 @@
 #include "ft_strace.h"
 
+static pid_t g_child_pid = 0;
+
+static void sigint_handler(int sig)
+{
+    (void)sig;
+    if (g_child_pid > 0)
+        kill(g_child_pid, SIGINT);
+}
+
 static int get_registers(pid_t pid, t_regs *regs)
 {
     struct iovec    iov;
@@ -84,16 +93,9 @@ static void trace_loop(pid_t main_pid, int arch) {
             }
             if (event == PTRACE_EVENT_EXIT)
             {
-                if (pid == main_pid)
-                {
-                    unsigned long exit_code;
-                    ptrace(PTRACE_GETEVENTMSG, pid, NULL, &exit_code);
-                    if (exit_code > 128)
-                        fprintf(stderr, "+++ killed by %s +++\n", get_signal_name(exit_code - 128));
-                    else
-                        fprintf(stderr, "+++ exited with %lu +++\n", exit_code);
-                    proc->exit_printed = true;  // ← marcar como impreso
-                }
+                proc->exit_printed = false;
+                ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                continue;
             }
             ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
             continue;
@@ -182,6 +184,9 @@ int run_tracer(pid_t pid, int arch)
         FT_ERROR("waitpid");
         return 1;
     }
+
+    g_child_pid = pid;
+    signal(SIGINT, sigint_handler);
 
     trace_loop(pid, arch);
     return 0;
