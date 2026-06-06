@@ -59,7 +59,7 @@ static void trace_loop(pid_t main_pid, int arch) {
 
         if (WIFSIGNALED(status))
         {
-            if (pid == main_pid)
+            if (!proc->exit_printed)
                 fprintf(stderr, "+++ killed by %s +++\n", get_signal_name(WTERMSIG(status)));
             proc_remove(&procs, pid);
             continue;
@@ -88,7 +88,11 @@ static void trace_loop(pid_t main_pid, int arch) {
                 {
                     unsigned long exit_code;
                     ptrace(PTRACE_GETEVENTMSG, pid, NULL, &exit_code);
-                    fprintf(stderr, "+++ exited with %lu +++\n", exit_code);
+                    if (exit_code > 128)
+                        fprintf(stderr, "+++ killed by %s +++\n", get_signal_name(exit_code - 128));
+                    else
+                        fprintf(stderr, "+++ exited with %lu +++\n", exit_code);
+                    proc->exit_printed = true;  // ← marcar como impreso
                 }
             }
             ptrace(PTRACE_SYSCALL, pid, NULL, NULL);

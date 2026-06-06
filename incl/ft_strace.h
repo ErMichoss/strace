@@ -98,6 +98,7 @@ typedef struct s_proc
     bool            entry;
     int             syscall_num;
     int             arch;
+    bool            exit_printed;
     struct s_proc   *next;
 }   t_proc;
 
